@@ -6,7 +6,7 @@ This project simulates a data science pipeline that handles a stream of data, pr
 
 **Data Pipeline**
 
-* Dataset: Current plan to use a text-based dataset that can be clustered into multiple categories.
+* Dataset: Current plan to use a text-based dataset that can be clustered into multiple categories. Dataset will be version controlled using DVC.
 * Data Source: I plan to simulate a Twitter-like environment, where data comes in batches and there is a blockage for some time between two subsequent requests. To realize this idea, I plan to employ an AWS Lambda function that will be connected to a DynamoDb and and S3-Bucket. It will read the last-read-record from DynamoDb and send the next batch after the blockade is clear. Such a functionality can be simulated through LocalStack, without incurring any financial loss. In addition to this, I shall also use Terraform to simulate the automation process using Infrastructure-as-Code.
 * Kafka: As always, a Kafka module is essential for most of the stream-processing (batch) system. I plan to use this. Here, there will be two producers and consumers written in Golang. The producer shall communicate with the Lambda and get the data and the consumer shall communicate with a service that serves the model.
 * Data Quality: Data quality is a big idea for this project. This shall be ensured through Kafka Schema Registry, Apache Griffin(Java), Great Expectation (Python) etc. Schema evolution, data drift, concept drift, column validation, etc. are some of the items that will be validated here.
