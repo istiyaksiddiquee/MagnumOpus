@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+
+  localstack:
+    image: localstack/localstack:1.3.1
+    container_name: localstack
+    ports:
+      - '4563-4584:4563-4584'
+    environment:
+      - DATA_DIR=/tmp/localstack/data
+      - DEBUG=1
+      - DEFAULT_REGION=ap-southeast-2
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - LAMBDA_EXECUTOR=docker-reuse
+      - PORT_WEB_UI=8080
+      - SERVICES=lambda,dynamodb
+      - LAMBDA_DOCKER_NETWORK=localstack-tutorial
+      - LAMBDA_REMOVE_CONTAINERS=false
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - localstack:/tmp/localstack/data
+    depends_on:
+      - docker-events-listener
+    networks:
+      - localstack-net
+
+  docker-events-listener:
+    build:
+      context: docker-events-listener-build # 3
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # 4
+      - ./terraform:/opt/terraform/
+    environment:
+      APPLY_TERRAFORM_ON_START: "true"
+      INVOKE_LAMBDAS_ON_START: counter
+    networks:
+      - localstack-net
+
+networks:
+  localstack-net:
+    driver: bridge
+
+volumes:
+  localstack:
