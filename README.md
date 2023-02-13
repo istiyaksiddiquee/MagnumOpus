@@ -12,7 +12,10 @@ This project simulates a data science pipeline that handles a stream of data, pr
 * Data Quality: Data quality is a big idea for this project. This shall be ensured through Kafka Schema Registry, Apache Griffin(Java), Great Expectation (Python) etc. Schema evolution, data drift, concept drift, column validation, etc. are some of the items that will be validated here.
 * Model Serving: Model serving will be done through a REST-API, built using FastAPI. This API will maintain a WebSocket with the dashboard.
 * Spark-Streaming: A PySpark model shall be served using spark-streaming, thus reducing the need for an extra consumer of Kafka. 
-* Dashboard: Streamlit will be used to create a live dashboard. Here, I shall show the result of the classification in a live manner through WebSocket. A second portion will show the result of the spark-streaming model. I might also use micro-front-end architecture for developing the dashboard.
+* Dashboard: Streamlit will be used to create a live dashboard. Here, I shall show the result of the classification in a live manner through WebSocket. A second portion will show the result of the spark-streaming model. I might also use micro-front-end architecture for developing the dashboard. 
+Or, alternatively, the UI can be built using Angular. This will provide more support. I can use multiple sections using micro-frontend architecture: each section will talk to a different microservice. There can be a separate section to show some exploratory data about the train split of the dataset. What kind of information will be shown is a question, but some basic stuff, like class distribution, etc. can be shown. For this, i can use pyodide and wasm functionality. 
+See more: https://testdriven.io/blog/build-spa-with-python-part-2/
+https://boyan.io/angular-wasm/
 
 **Machine Learning Modelling**
 As this will be a clustering dataset, I plan to use multiple mdoels. These models will be trained in different ways as well. 
