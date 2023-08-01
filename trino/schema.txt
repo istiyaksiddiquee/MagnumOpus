@@ -1,0 +1,6 @@
+CREATE SCHEMA IF NOT EXISTS warehouse.bronze 
+WITH (location='s3a://warehouse/bronze');
+CREATE SCHEMA IF NOT EXISTS warehouse.silver 
+WITH (location='s3a://warehouse/silver');
+CREATE SCHEMA IF NOT EXISTS warehouse.gold 
+WITH (location='s3a://warehouse/gold');
