@@ -1,0 +1,35 @@
+bronze:
+  target: dev
+  outputs:
+    dev:
+      type: trino
+      user: admin
+      host: localhost
+      port: 8080
+      database: warehouse
+      schema: bronze
+      threads: 1
+
+silver:
+  target: dev
+  outputs:
+    dev:
+      type: trino
+      user: admin
+      host: localhost
+      port: 8080
+      database: warehouse
+      schema: silver
+      threads: 1
+
+gold:
+  target: dev
+  outputs:
+    dev:
+      type: trino
+      user: admin
+      host: localhost
+      port: 8080
+      database: warehouse
+      schema: gold
+      threads: 1

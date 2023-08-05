@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: postgres
+    database: psql
+    schema: public
+
+    tables:
+      - name: green_taxi_2022_01
+      - name: green_taxi_2022_02
+      - name: green_taxi_2022_03
+      - name: green_taxi_2022_04
+      - name: green_taxi_2022_05
+      - name: green_taxi_2022_06
+      - name: green_taxi_2022_07
+      - name: green_taxi_2022_08
+      - name: green_taxi_2022_09
+      - name: green_taxi_2022_10
+      - name: green_taxi_2022_11
+      - name: green_taxi_2022_12
+      - name: green_taxi_2023_01
+      - name: green_taxi_2023_02
+      - name: green_taxi_2023_03
+      - name: green_taxi_2023_04
+      - name: green_taxi_2023_05
