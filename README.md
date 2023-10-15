@@ -4,6 +4,8 @@
 
 This project simulates a data science pipeline that handles a stream of data, processes it, and show prediction in a dashboard. To elaborate on this, the following list might help in understanding the pipeline:
 
+![Alt Tech Stack](Presentation1.jpg)
+
 **Data Pipeline**
 
 * Dataset: Current plan to use a text-based dataset that can be clustered into multiple categories. Dataset will be version controlled using DVC.
