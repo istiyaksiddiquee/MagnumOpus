@@ -4,7 +4,7 @@
 
 This project simulates a data science pipeline that handles a stream of data, processes it, and show prediction in a dashboard. To elaborate on this, the following list might help in understanding the pipeline:
 
-![Alt Tech Stack](Presentation1.jpg)
+![Alt Tech Stack](tools used.jpg)
 
 **Data Pipeline**
 
