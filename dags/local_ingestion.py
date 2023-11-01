@@ -41,6 +41,17 @@ with local_workflow:
         bash_command=f'curl -sSL {URL_TEMPLATE} > {OUTPUT_FILE_TEMPLATE}'
     )
 
+    # https://docs.astronomer.io/learn/airflow-great-expectations
+    # the idea is to download the parquet file from the official website
+    # then we shall create a dataframe out of that parquet file and pass it to 
+    # the GreatExpectationsOperator for Airflow to validate the schema 
+    # and to do some unit test on the invidivual column to validate the values of 
+    # each column so that the values fall into acceptable ranges 
+    # if these tests fail, then we shall not proceed. 
+    # If all the tests pass, then we shall continue and pass the dataframe object to 
+    # the python operator where we use a postgres connection to store the parquet data 
+    # as a landing stage for our lakehouse. 
+    
     ingest_task = PythonOperator(
         task_id="ingest",
         python_callable=ingest_callable,

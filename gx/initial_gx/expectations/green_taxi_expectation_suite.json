@@ -1,0 +1,47 @@
+{
+  "data_asset_type": null,
+  "expectation_suite_name": "green_taxi_expectation_suite",
+  "expectations": [
+    {
+      "expectation_type": "expect_column_values_to_match_strftime_format",
+      "kwargs": {
+        "column": "lpep_pickup_datetime",
+        "strftime_format": "%Y-%m-%d %H:%M:%S"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_match_strftime_format",
+      "kwargs": {
+        "column": "lpep_dropoff_datetime",
+        "strftime_format": "%Y-%m-%d %H:%M:%S"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_non_negative",
+      "kwargs": {
+        "column": "passenger_count"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_non_negative",
+      "kwargs": {
+        "column": "trip_distance"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_non_negative",
+      "kwargs": {
+        "column": "tolls_amount"
+      },
+      "meta": {}
+    }
+  ],
+  "ge_cloud_id": null,
+  "meta": {
+    "great_expectations_version": "0.17.23"
+  }
+}
