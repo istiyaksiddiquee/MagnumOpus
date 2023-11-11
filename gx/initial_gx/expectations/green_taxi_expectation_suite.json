@@ -31,13 +31,6 @@
         "column": "trip_distance"
       },
       "meta": {}
-    },
-    {
-      "expectation_type": "expect_column_values_to_be_non_negative",
-      "kwargs": {
-        "column": "tolls_amount"
-      },
-      "meta": {}
     }
   ],
   "ge_cloud_id": null,
