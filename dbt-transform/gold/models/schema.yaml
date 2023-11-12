@@ -1,14 +1,14 @@
 version: 2
 
 sources:
-  - name: bronze
+  - name: silver
     database: warehouse
-    schema: bronze
+    schema: silver
 
     tables:
-      - name: accumulate
+      - name: cleaned_tlc
         external:
-            location: 's3a://warehouse/bronze/accumulate'
+            location: 's3a://warehouse/silver/cleaned_tlc'
             using: iceberg
         columns:
           - name: vendorid

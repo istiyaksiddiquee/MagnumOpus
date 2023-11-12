@@ -33,5 +33,5 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   silver:
     +materialized: table
-    +file_format: delta
+    +file_format: iceberg
     +location_root: s3a://warehouse/silver

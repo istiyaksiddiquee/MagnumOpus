@@ -22,3 +22,5 @@ where
 	and  (pickup_locationid  between 1 and 263)
 	and  fare_amount >= 0
 	and  total_amount >= 0
+	and  mta_tax >= 0
+	and  tip_amount >= 0
