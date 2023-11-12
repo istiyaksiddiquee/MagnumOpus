@@ -59,7 +59,6 @@ def data_validation(df: pd.DataFrame):
         index=Index(int),
         strict=True,
     )
-
     
     try:
         schema.validate(df)
@@ -125,52 +124,28 @@ def db_injection(year_month_duo: str, df: pd.DataFrame):
 #     pass
 
 
-@task
-def extract(info: str):
-    """
-    Pushes the estimated population (in millions) of
-    various cities into XCom for the ETL pipeline.
-    Obviously in reality this would be fetching this
-    data from some source, not hardcoded values.
-    """
-    print("before")
-    print(info)
-    print("after")
-    sample_data = {"Tokyo": 3.7, "Jakarta": 3.3, "Delhi": 2.9}
-    return json.dumps(sample_data)
-
 
 @task
-def transform(raw_data: str):
-    """
-    Loads the provided raw data from XCom and pushes
-    the name of the largest city in the set to XCom.
-    """
-    data = json.loads(raw_data)
-
-    largest_city = max(data, key=data.get)
-    return largest_city
-
-
-@task
-def load(df: pd.DataFrame):
+def load(year_month_duo):
     """
     Prints the name of the largest city in
     the set as determined by the transform.
     """
 
-    print(df.shape)
+    print(year_month_duo)
 
 
 with DAG(
     dag_id="green_taxi",
     schedule_interval="0 6 2 * *",
     start_date=datetime(2023, 1, 1),
-    end_date=datetime(2023, 3, 15),
+    end_date=datetime(2023, 8, 15),
 ) as dag:
-    year_month_duo = "{{ execution_date.strftime('%Y-%m') }}"
-    extracted_data = scrape_data_from_source(year_month_duo)
+    year_month_duo_for_scraping = "{{ execution_date.strftime('%Y-%m') }}"
+    year_month_duo_for_db = "{{ execution_date.strftime('%Y_%m') }}"
+    
+    extracted_data = scrape_data_from_source(year_month_duo_for_scraping)
     if extracted_data != None:
         validated_data = data_validation(extracted_data)
         if validated_data != None:
-            db_injection(year_month_duo, validated_data)
+            db_injection(year_month_duo_for_db, validated_data)
