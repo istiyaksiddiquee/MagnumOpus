@@ -74,6 +74,8 @@ x-airflow-common:
     &airflow-common-depends-on
     postgres:
       condition: service_healthy
+  networks:
+      - airflow-net
 
 services:
   postgres:
@@ -89,6 +91,8 @@ services:
       interval: 5s
       retries: 5
     restart: always
+    networks:
+      - airflow-net
 
   airflow-webserver:
     <<: *airflow-common
@@ -212,3 +216,7 @@ services:
 
 volumes:
   postgres-db-volume:
+
+networks:
+  airflow-net:
+    driver: bridge

@@ -3,7 +3,9 @@ import pandas as pd
 from airflow import DAG
 from datetime import datetime
 from airflow.decorators import task
-
+from airflow.models.baseoperator import chain
+from airflow.operators.bash import BashOperator
+from pendulum import duration
 
 @task
 def scrape_data_from_source(year_month_duo: str):
@@ -84,45 +86,21 @@ def data_validation(df: pd.DataFrame):
     return df
 
 @task
-def db_injection(year_month_duo: str, df: pd.DataFrame):
+def db_injection(table_name: str, df: pd.DataFrame):
     
     # we have a df that we want to inject in our pg database
     # return successful if successful
     import os
     from ingestion_script import ingest_callable
-    
+        
     PG_HOST = os.getenv('PG_HOST')
     PG_USER = os.getenv('PG_USER')
     PG_PASSWORD = os.getenv('PG_PASSWORD')
     PG_PORT = os.getenv('PG_PORT')
-    PG_DATABASE = os.getenv('PG_DATABASE')
-    TABLE_NAME_TEMPLATE = 'green_taxi_' + year_month_duo
+    PG_DATABASE = os.getenv('PG_DATABASE')    
     
     if df.shape != 0:
-        ingest_callable(PG_USER, PG_PASSWORD, PG_HOST, PG_PORT, PG_DATABASE, TABLE_NAME_TEMPLATE, df)
-
-
-# def process_bronze_layer():
-#     # process ETL with dbt
-#     # get all the data from pg and unify them
-#     # use macro in dbt
-#     pass
-
-
-# def process_silver_layer():
-#     # we have all of our data
-#     # we clean and format the data in this step with dbt
-#     pass
-
-
-# def process_gold_layer():
-#     # we divide our data into two separate schemas
-#     # AI will have data for machine learning models
-#     # BI will have data for BI
-#     # in BI, we give some additional computed fields
-#     # in AI, we remove some additional unnecessary fields according to observation
-#     pass
-
+        ingest_callable(PG_USER, PG_PASSWORD, PG_HOST, PG_PORT, PG_DATABASE, table_name, df)
 
 
 @task
@@ -138,14 +116,41 @@ def load(year_month_duo):
 with DAG(
     dag_id="green_taxi",
     schedule_interval="0 6 2 * *",
-    start_date=datetime(2023, 1, 1),
-    end_date=datetime(2023, 8, 15),
+    start_date=datetime(2023, 2, 1),
+    end_date=datetime(2023, 3, 15),
+    default_args={"retries": 1, "retry_delay": duration(minutes=1)},
+    max_active_runs=1,
+    concurrency=5,
 ) as dag:
+    
     year_month_duo_for_scraping = "{{ execution_date.strftime('%Y-%m') }}"
     year_month_duo_for_db = "{{ execution_date.strftime('%Y_%m') }}"
+    TABLE_NAME_TEMPLATE = 'green_taxi_' + year_month_duo_for_db
     
     extracted_data = scrape_data_from_source(year_month_duo_for_scraping)
-    if extracted_data != None:
-        validated_data = data_validation(extracted_data)
-        if validated_data != None:
-            db_injection(year_month_duo_for_db, validated_data)
+    validated_data = data_validation(extracted_data)
+    inject_db = db_injection(TABLE_NAME_TEMPLATE, validated_data)
+        
+    bronze_transform = BashOperator(
+        task_id="bronze_transform",
+        bash_command=f"dbt run --vars 'db_name: {TABLE_NAME_TEMPLATE}' --project-dir /opt/airflow/dbt-transform/bronze --profiles-dir /opt/airflow/dbt-transform"
+    )
+    
+    silver_transform = BashOperator(
+        task_id="silver_transform",
+        bash_command=f'dbt run --project-dir /opt/airflow/dbt-transform/silver --profiles-dir /opt/airflow/dbt-transform'
+    )
+    
+    gold_transform = BashOperator(
+        task_id="gold_transform",
+        bash_command=f'dbt run --project-dir /opt/airflow/dbt-transform/gold --profiles-dir /opt/airflow/dbt-transform'
+    )
+    
+    chain(
+        extracted_data,
+        validated_data,
+        inject_db,
+        bronze_transform, 
+        silver_transform,
+        gold_transform
+    )
