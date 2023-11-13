@@ -1,7 +1,7 @@
 {{
     config(
-        materialized = 'table',
-        on_table_exists = 'drop'
+        materialized = 'incremental',
+        incremental_strategy='append'
     )
 }}
 

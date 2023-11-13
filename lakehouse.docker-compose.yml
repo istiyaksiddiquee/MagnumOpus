@@ -15,6 +15,8 @@ services:
     restart: always
     ports:
       - ${PG_PORT}:${PG_PORT}
+    networks:
+      - dataingestion_airflow-net
 
 # volumes:
 #   lakehouse-pgdb-volume:
@@ -29,18 +31,22 @@ services:
     image: "trinodb/trino"
     hostname: trino
     ports:
-      - "8080:8080"
+      - "8000:8080"
     volumes:
       - ./trino:/etc/trino
+    networks:
+      - dataingestion_airflow-net
 
   metastore_db:
-    image: postgres:11
+    image: postgres:13
     hostname: metastore_db
     container_name: metastore_db
     environment:
       POSTGRES_USER: hive
       POSTGRES_PASSWORD: hive
       POSTGRES_DB: metastore
+    networks:
+      - dataingestion_airflow-net
 
   hive-metastore:
     container_name: hive-metastore
@@ -74,6 +80,8 @@ services:
       AZURE_WASB_ACCESS_KEY: ""
     depends_on:
       - metastore_db
+    networks:
+      - dataingestion_airflow-net
 
   minio:
     hostname: minio
@@ -86,6 +94,8 @@ services:
       MINIO_ACCESS_KEY: minio
       MINIO_SECRET_KEY: minio123
     command: server /data --console-address ":9001"
+    networks:
+      - dataingestion_airflow-net
 
   # # This job will create the "datalake" bucket on Minio
   mc-job:
@@ -99,11 +109,17 @@ services:
       "
     depends_on:
       - minio
+    networks:
+      - dataingestion_airflow-net
 
 volumes:
   lakehouse-pgdb-volume:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: 'C:\\parquet backup'
+    # driver: local
+    # driver_opts:
+    #   type: 'none'
+    #   o: 'bind'
+    #   device: 'E:\\Magnum Opus\\magnum_db_backup'
+
+networks:
+  dataingestion_airflow-net:
+    external: true

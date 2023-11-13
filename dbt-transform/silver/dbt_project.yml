@@ -32,6 +32,6 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   silver:
-    +materialized: table
+    +materialized: incremental
     +file_format: iceberg
     +location_root: s3a://warehouse/silver
