@@ -17,7 +17,7 @@ Let's now enumerate some of the characteristics of this project:
 * There are very few examples online where the concept of data lakehouse has been materialized in this way (on-prem, open-source, full-cycle).
 
 
-As the image suggest, this project will have several components. As this is still under development, you might see occassional changes in this file. Currently, the ETL pipeline is complete. The detailed concept of this ETL pipeline can be found in the ETL README file. 
+As the image suggest, this project will have several components. As this is still under development, you might see occassional changes in this file. Currently, the ETL pipeline is complete. The detailed concept of this ETL pipeline can be found in the [ETL README](elt.readme.md) file. 
 
 
 **Data Pipeline**
