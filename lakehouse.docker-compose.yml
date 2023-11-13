@@ -13,11 +13,16 @@ services:
     volumes:
       - lakehouse-pgdb-volume:/var/lib/postgresql/data
     restart: always
-#     ports:
-#       - ${PG_PORT}:${PG_PORT}
+    ports:
+      - ${PG_PORT}:${PG_PORT}
 
 # volumes:
 #   lakehouse-pgdb-volume:
+#     driver: local
+#     driver_opts:
+#       type: 'none'
+#       o: 'bind'
+#       device: 'C:\\parquet backup'
 
   trino:
     container_name: trino
@@ -82,7 +87,7 @@ services:
       MINIO_SECRET_KEY: minio123
     command: server /data --console-address ":9001"
 
-  # This job will create the "datalake" bucket on Minio
+  # # This job will create the "datalake" bucket on Minio
   mc-job:
     image: 'minio/mc:RELEASE.2022-05-09T04-08-26Z'
     container_name: mc-job
@@ -90,23 +95,15 @@ services:
       /bin/bash -c "
       sleep 5;
       /usr/bin/mc config --quiet host add myminio http://minio:9000 minio minio123;
-      /usr/bin/mc mb --quiet myminio/datalake myminio/warehouse
+      /usr/bin/mc mb --ignore-existing --quiet myminio/datalake myminio/warehouse
       "
     depends_on:
       - minio
 
-
 volumes:
   lakehouse-pgdb-volume:
-
-# networks:
-#   lake_network:
-#     driver: bridge
-#     name: lake_network
-
-
-
-# networks:
-#   airflow:
-#     external:
-#       name: dataingestion_default
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: 'C:\\parquet backup'

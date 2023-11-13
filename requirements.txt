@@ -1,4 +1,10 @@
-pyarrow
 pandas
 sqlalchemy
 psycopg2-binary
+apache-airflow
+pandera
+dbt-core
+dbt-trino
+dbt-postgres
+great_expectations
+pyarrow

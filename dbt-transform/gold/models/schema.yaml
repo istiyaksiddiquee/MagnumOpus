@@ -1,0 +1,53 @@
+version: 2
+
+sources:
+  - name: silver
+    database: warehouse
+    schema: silver
+
+    tables:
+      - name: cleaned_tlc
+        external:
+            location: 's3a://warehouse/silver/cleaned_tlc'
+            using: iceberg
+        columns:
+          - name: vendorid
+            data_type: BIGINT
+          - name: ratecodeid
+            data_type: BIGINT
+          - name: pickup_locationid
+            data_type: BIGINT
+          - name: dropoff_locationid
+            data_type: BIGINT
+          - name: pickup_datetime
+            data_type: timestamp
+          - name: dropoff_datetime
+            data_type: timestamp
+          - name: store_and_fwd_flag
+            data_type: BIGINT
+          - name: passenger_count
+            data_type: BIGINT
+          - name: trip_distance
+            data_type: DOUBLE
+          - name: trip_type
+            data_type: BIGINT
+          - name: fare_amount
+            data_type: DOUBLE
+          - name: extra
+            data_type: DOUBLE
+          - name: mta_tax
+            data_type: DOUBLE
+          - name: tip_amount
+            data_type: DOUBLE
+          - name: tolls_amount
+            data_type: DOUBLE
+          - name: ehail_fee
+            data_type: BIGINT
+          - name: improvement_surcharge
+            data_type: DOUBLE
+          - name: total_amount
+            data_type: DOUBLE
+          - name: payment_type
+            data_type: BIGINT
+          - name: congestion_surcharge
+            data_type: DOUBLE

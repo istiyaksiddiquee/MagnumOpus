@@ -4,3 +4,5 @@ CREATE SCHEMA IF NOT EXISTS warehouse.silver
 WITH (location='s3a://warehouse/silver');
 CREATE SCHEMA IF NOT EXISTS warehouse.gold 
 WITH (location='s3a://warehouse/gold');
+
+trino://admin@host.docker.internal:8080/warehouse --> for superset

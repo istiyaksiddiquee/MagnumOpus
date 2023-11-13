@@ -23,8 +23,8 @@ PG_DATABASE = os.getenv('PG_DATABASE')
 local_workflow = DAG(
     "LocalIngestionDag",
     schedule_interval="0 6 2 * *",
-    start_date=datetime(2022, 10, 1),
-    end_date=datetime(2023, 5, 3)
+    start_date=datetime(2023, 1, 1),
+    end_date=datetime(2023, 5, 15)
 ) 
 
 URL_PREFIX = 'https://d37ci6vzurychx.cloudfront.net/trip-data' 
@@ -32,7 +32,7 @@ URL_TEMPLATE = URL_PREFIX + '/green_tripdata_{{ execution_date.strftime(\'%Y-%m\
 OUTPUT_FILE_TEMPLATE = '/opt/airflow/output_{{ execution_date.strftime(\'%Y-%m\') }}.parquet'
 TABLE_NAME_TEMPLATE = 'green_taxi_{{ execution_date.strftime(\'%Y_%m\') }}'
 
-# print('die port ist: ' + str(PG_PORT))
+print(f'curl -sSL {URL_TEMPLATE} > {OUTPUT_FILE_TEMPLATE}')
 
 with local_workflow:
 
@@ -41,6 +41,17 @@ with local_workflow:
         bash_command=f'curl -sSL {URL_TEMPLATE} > {OUTPUT_FILE_TEMPLATE}'
     )
 
+    # https://docs.astronomer.io/learn/airflow-great-expectations
+    # the idea is to download the parquet file from the official website
+    # then we shall create a dataframe out of that parquet file and pass it to 
+    # the GreatExpectationsOperator for Airflow to validate the schema 
+    # and to do some unit test on the invidivual column to validate the values of 
+    # each column so that the values fall into acceptable ranges 
+    # if these tests fail, then we shall not proceed. 
+    # If all the tests pass, then we shall continue and pass the dataframe object to 
+    # the python operator where we use a postgres connection to store the parquet data 
+    # as a landing stage for our lakehouse. 
+    
     ingest_task = PythonOperator(
         task_id="ingest",
         python_callable=ingest_callable,
@@ -51,8 +62,7 @@ with local_workflow:
             port=PG_PORT,
             db=PG_DATABASE,
             table_name=TABLE_NAME_TEMPLATE,
-            parquet_file=OUTPUT_FILE_TEMPLATE,
-            directory=AIRFLOW_HOME
+            parquet_file=OUTPUT_FILE_TEMPLATE
         ),
     )
 
