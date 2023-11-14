@@ -10,9 +10,11 @@ Initially the data is getting pulled from the source using simple scraper built 
 
 As suggested by the original authors of [Lakehouse](https://www.cidrdb.org/cidr2021/papers/cidr2021_paper17.pdf) paper, my lakehouse has three levels: Bronze, Silver, and Gold. To implement this concept, I [dbt](https://www.getdbt.com/) extensively. The scraped and validated data is pushed to a [PostgreSQL](https://www.postgresql.org/) database first. Then dbt loads the data through [Trino](https://trino.io/) and slowly transforms it into a usable format. This transformation happens in three stages: in the bronze layer, raw data is loaded from PostgreSQL. Then in the silver layer, I filter the data and select only the valid ones. In the gold layer, the data is divided into AI and BI compatible format. For the BI, I have added additional columns that might become useful for analytics. 
 
-Finally, these transformed layers are getting stored in the lakehouse with the help of [Trino](https://trino.io/). The raw data is being stored in a [MinIo](https://min.io/) storage in the [Apache Iceberg](https://iceberg.apache.org/) format. Thus, when I use [DBeaver](https://dbeaver.io/) to communicate with my lakehouse, I can query on each of the layer separately. 
+These transformed layers are getting stored in the lakehouse with the help of [Trino](https://trino.io/). The raw data is being stored in a [MinIo](https://min.io/) storage in the [Apache Iceberg](https://iceberg.apache.org/) format. Thus, when I use [DBeaver](https://dbeaver.io/) to communicate with my lakehouse, I can query on each of the layer separately. 
 
-To accomplish this whole feat, I have leaned on several free and open-source resources. Here is a non-exhaustive list of resources I found useful:
+Finally, I am using [Apache Airflow](https://airflow.apache.org/) to orchestrate this whole pipeline. I have read several resources about the new TaskFlow API of Airflow 2.0 and found that a combination of old and new approach is better suited for my use-case since I also need to execute some bash commands for running the dbt projects.
+
+However, to accomplish this whole feat, I have leaned on several free and open-source resources. Here is a non-exhaustive list of resources I found useful:
 
 1. https://medium.com/@ongxuanhong/dataops-03-trino-dbt-spark-everything-everywhere-all-at-once-241932d27a6
 2. https://github.com/zsvoboda/ngods-stocks
