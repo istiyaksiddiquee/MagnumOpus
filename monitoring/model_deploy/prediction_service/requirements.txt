@@ -1,0 +1,11 @@
+scikit-learn
+dataclasses
+Flask
+pandas
+Werkzeug
+requests
+prometheus-client
+pyyaml
+evidently
+pymongo
+flask_prometheus_metrics

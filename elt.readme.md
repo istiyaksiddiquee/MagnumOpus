@@ -21,3 +21,4 @@ However, to accomplish this whole feat, I have leaned on several free and open-s
 3. https://www.starburst.io/blog/2022-11-30-dbt0-introduction-html/
 4. https://www.youtube.com/playlist?list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb
 5. https://datatalks.club/blog/how-to-setup-lightweight-local-version-for-airflow.html
+6. https://medium.com/@linniartan/nyc-taxi-data-analysis-part-1-clean-and-transform-data-in-bigquery-2cb1142c6b8b

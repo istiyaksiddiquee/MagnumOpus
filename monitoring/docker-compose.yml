@@ -1,0 +1,104 @@
+version: '3.9'
+
+volumes:
+    prometheus_data: {}
+    grafana_data: {}
+    mongo_data: {}
+
+services:
+
+  # dummy_metric:
+  #   container_name: dummy_metric
+  #   build:
+  #     context: ./model_deploy/dummy_metric
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "9696:9696"
+
+  prediction_service:
+    container_name: prediction_service
+    build:
+      context: ./model_deploy/prediction_service
+      dockerfile: Dockerfile
+    environment:
+      EVIDENTLY_SERVICE: "http://evidently_service.:8085"
+      MONGODB_ADDRESS: "mongodb://mongo.:27017/"
+    ports:
+      - "9696:9696"
+    depends_on:
+      - evidently_service
+      - mongo
+      
+  evidently_service:
+    container_name: evidently_service
+    build:
+      context: ./model_deploy/evidently_service
+      dockerfile: Dockerfile
+    volumes:
+      - ./model_deploy/evidently_service/datasets:/app/datasets
+      - ./model_deploy/evidently_service/config.yaml:/app/config.yaml
+    depends_on:
+      - grafana
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    restart: always
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./monitoring/grafana:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    restart: always
+    depends_on:
+      - prometheus
+
+  mongo:
+    container_name: mongo
+    image: mongo:latest
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok'
+      timeout: 30s
+      interval: 10s
+      retries: 10
+
+  mongodb_exporter:
+    image: percona/mongodb_exporter:0.20 
+    container_name: mongodb-exporter
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+    
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    volumes:
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    devices:
+      - /dev/kmsg
+    privileged: true
+    restart: unless-stopped
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    command: "--path.rootfs=/host"
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - /:/host:ro,rslave
