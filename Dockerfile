@@ -4,10 +4,11 @@ ENV AIRFLOW_HOME=/opt/airflow
 WORKDIR $AIRFLOW_HOME
 
 USER root
-RUN apt-get update -qq && apt-get install vim -qqq
+RUN apt-get update -qq && apt-get install libpq-dev python3-dev vim -qqq
 
-COPY scripts scripts
-RUN chmod +x scripts
+COPY ./scripts/entrypoint.sh scripts/entrypoint.sh
+RUN chmod +x scripts/entrypoint.sh
+RUN airflow db upgrade && airflow users create -r Admin -u admin -p admin -e admin@example.com -f admin -l airflow
 
 USER $AIRFLOW_UID
 
