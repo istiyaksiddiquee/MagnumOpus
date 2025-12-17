@@ -2,3 +2,5 @@ dags/__pycache__
 logs/
 .vscode
 lake-venv
+stream-processing/flink/.idea
+stream-processing/flink/target
