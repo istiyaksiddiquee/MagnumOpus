@@ -11,7 +11,7 @@ DATA_DIR.mkdir(exist_ok=True)
 @dag(
     dag_id="lakehouse_taxi",
     schedule="0 6 2 * *",
-    start_date=datetime(2024, 12, 1),  # Before Jan 2025
+    start_date=datetime(2025, 1, 1),  # Before Jan 2025
     end_date=datetime(2025, 10, 15),
     default_args={"retries": 1, "retry_delay": duration(minutes=1)},
     max_active_runs=2,
