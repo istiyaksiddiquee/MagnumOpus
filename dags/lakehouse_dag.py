@@ -11,10 +11,10 @@ DATA_DIR.mkdir(exist_ok=True)
 @dag(
     dag_id="lakehouse_taxi",
     schedule="0 6 2 * *",
-    start_date=datetime(2023, 2, 1),
-    end_date=datetime(2023, 3, 15),
+    start_date=datetime(2024, 12, 1),  # Before Jan 2025
+    end_date=datetime(2025, 10, 15),
     default_args={"retries": 1, "retry_delay": duration(minutes=1)},
-    max_active_runs=1,
+    max_active_runs=2,
     catchup=True,
 )
 def lakehouse_dag():
@@ -43,13 +43,16 @@ def lakehouse_dag():
 
             print("Parquet file read successfully. Dataframe shape: ", df.shape)
             # Convert to dictionary for XCom serialization
+            year_month_duo = f"{date_obj.year}_{month}"
             path = DATA_DIR / f"green_{year_month_duo}.parquet"
             df.to_parquet(path)
-            return str(year_month_duo)
+
         except HTTPError:
             print(f"The requested file is not available: {URL_TEMPLATE}")
             # Skip this task instead of returning None
             raise AirflowSkipException(f"File not available for {year_month_duo}")
+
+        return str(year_month_duo)
 
     @task()
     def data_validation(year_month_duo: str):
@@ -92,6 +95,7 @@ def lakehouse_dag():
                 "payment_type": Column(Float64, coerce=True, nullable=True),
                 "trip_type": Column(Float64, coerce=True, nullable=True),
                 "congestion_surcharge": Column(Float64, coerce=True, nullable=True),
+                "cbd_congestion_fee": Column(Float64, coerce=True, nullable=True),
             },
             index=Index(int),
             strict=True,
