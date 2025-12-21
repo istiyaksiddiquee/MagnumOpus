@@ -1,40 +1,61 @@
 {
-  "data_asset_type": null,
-  "expectation_suite_name": "green_taxi_expectation_suite",
   "expectations": [
     {
-      "expectation_type": "expect_column_values_to_match_strftime_format",
+      "id": "ee2c7f1c-36a0-43fc-b0a3-42925d7b025a",
       "kwargs": {
         "column": "lpep_pickup_datetime",
         "strftime_format": "%Y-%m-%d %H:%M:%S"
       },
-      "meta": {}
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_match_strftime_format"
     },
     {
-      "expectation_type": "expect_column_values_to_match_strftime_format",
+      "id": "de474125-8f31-4c06-92d7-ac9e36fc833d",
       "kwargs": {
         "column": "lpep_dropoff_datetime",
         "strftime_format": "%Y-%m-%d %H:%M:%S"
       },
-      "meta": {}
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_match_strftime_format"
     },
     {
-      "expectation_type": "expect_column_values_to_be_non_negative",
+      "id": "65d77ce2-77d1-4b91-986d-deddeb26874b",
       "kwargs": {
-        "column": "passenger_count"
+        "column": "passenger_count",
+        "value_set": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
       },
-      "meta": {}
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_be_in_set"
     },
     {
-      "expectation_type": "expect_column_values_to_be_non_negative",
+      "id": "c597c6a2-cd1d-4f96-89b8-8a92034b7d88",
       "kwargs": {
-        "column": "trip_distance"
+        "column": "trip_distance",
+        "min_value": 0.0
       },
-      "meta": {}
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_be_between"
     }
   ],
-  "ge_cloud_id": null,
+  "id": "0a797dd6-78e8-4f65-ab13-55e8fff24e6a",
   "meta": {
-    "great_expectations_version": "0.17.23"
-  }
+    "great_expectations_version": "1.10.0"
+  },
+  "name": "green_taxi_expectation_suite",
+  "notes": null
 }
