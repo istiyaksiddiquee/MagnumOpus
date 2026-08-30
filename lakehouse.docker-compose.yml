@@ -20,7 +20,7 @@ services:
 
   trino:
     container_name: trino
-    image: "trinodb/trino"
+    image: trinodb/trino:479
     hostname: trino
     ports:
       - "8000:8080"
@@ -86,10 +86,10 @@ services:
       MINIO_ACCESS_KEY: minio
       MINIO_SECRET_KEY: minio123
     command: server /data --console-address ":9001"
-    networks:
-      - magnumopus_airflow-net
     volumes:
       - minio2_volume:/data
+    networks:
+      - magnumopus_airflow-net
 
   # # This job will create the "warehouse" bucket on Minio
   mc-job2:
