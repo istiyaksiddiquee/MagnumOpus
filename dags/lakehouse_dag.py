@@ -183,16 +183,12 @@ def lakehouse_dag():
             return False
 
         # Get environment variables
-        PG_HOST = os.getenv("PG_HOST")
-        PG_USER = os.getenv("PG_USER")
-        PG_PASSWORD = os.getenv("PG_PASSWORD")
-        PG_PORT = os.getenv("PG_PORT")
         PG_DATABASE = os.getenv("PG_DATABASE")
 
         # Format table name with execution date
         table_name = f"green_taxi_{year_month_duo}"
 
-        ingest_callable(PG_USER, PG_PASSWORD, PG_HOST, PG_PORT, PG_DATABASE, table_name, df)
+        ingest_callable(PG_DATABASE, table_name, df)
 
         return str(year_month_duo)
 
