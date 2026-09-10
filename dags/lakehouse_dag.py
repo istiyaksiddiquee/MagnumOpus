@@ -40,6 +40,7 @@ def lakehouse_dag():
 
         try:
             df = pd.read_parquet(URL_TEMPLATE)
+            df.drop(columns=["store_and_fwd_flag"], inplace=True)
 
             print("Parquet file read successfully. Dataframe shape: ", df.shape)
             # Convert to dictionary for XCom serialization
@@ -78,7 +79,6 @@ def lakehouse_dag():
                 "VendorID": Column(Float64, coerce=True),
                 "lpep_pickup_datetime": Column(datetime64),
                 "lpep_dropoff_datetime": Column(datetime64),
-                "store_and_fwd_flag": Column(object, nullable=True),
                 "RatecodeID": Column(Float64, nullable=True, coerce=True),
                 "PULocationID": Column(Float64, coerce=True),
                 "DOLocationID": Column(Float64, coerce=True),

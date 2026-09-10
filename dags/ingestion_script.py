@@ -1,5 +1,8 @@
-from sqlalchemy import create_engine
+from datetime import datetime, timezone
+
 import fluss
+import pandas as pd
+import pyarrow as pa
 
 BOOTSTRAP_SERVERS = "coordinator-server:9123"
 
@@ -9,7 +12,6 @@ SCHEMA = fluss.Schema(
             pa.field("vendor_id", pa.int32()),
             pa.field("lpep_pickup_datetime", pa.timestamp("us")),
             pa.field("lpep_dropoff_datetime", pa.timestamp("us")),
-            pa.field("store_and_fwd_flag", pa.string()),
             pa.field("rate_code_id", pa.int32()),
             pa.field("pu_location_id", pa.int32()),
             pa.field("do_location_id", pa.int32()),
@@ -34,7 +36,6 @@ SCHEMA = fluss.Schema(
 
 def ingest_callable(database, table_name, df):
 
-    df.store_and_fwd_flag.fillna("-999", inplace=True)
     df.passenger_count.fillna(-999, inplace=True)
     df.payment_type.fillna(-999, inplace=True)
     df.trip_type.fillna(-999, inplace=True)
@@ -44,7 +45,7 @@ def ingest_callable(database, table_name, df):
     # df.head(n=0).to_sql(name=table_name, con=engine, if_exists="replace")
     # df.to_sql(name=table_name, con=engine, if_exists="append")
 
-    conn = fluss.connect(bootstrap_servers=BOOTSTRAP_SERVERS)
+    conn = fluss.create(bootstrap_servers=BOOTSTRAP_SERVERS)
     admin = conn.get_admin()
 
     table_path = create_monthly_table(admin, database, table_name)
