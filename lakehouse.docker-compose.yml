@@ -6,8 +6,8 @@ services:
     image: zookeeper:3.9.2
     container_name: zookeeper
     restart: always
-    # networks:
-    #   - magnumopus_airflow-net
+    networks:
+      - magnumopus_airflow-net
 
   coordinator-server:
     build:
@@ -38,8 +38,8 @@ services:
       - zookeeper
       - hive-metastore
       - mc-job2
-    # networks:
-    #   - magnumopus_airflow-net
+    networks:
+      - magnumopus_airflow-net
 
   tablet-server:
     build:
@@ -64,8 +64,8 @@ services:
       - coordinator-server
     ports:
       - "9124:9124"
-    # networks:
-    #   - magnumopus_airflow-net
+    networks:
+      - magnumopus_airflow-net
 
   trino:
     container_name: trino
@@ -75,8 +75,8 @@ services:
       - "8000:8080"
     volumes:
       - ./trino:/etc/trino
-    # networks:
-    #   - magnumopus_airflow-net
+    networks:
+      - magnumopus_airflow-net
 
   metastore_db:
     image: postgres:17.7
@@ -86,8 +86,8 @@ services:
       POSTGRES_USER: hive
       POSTGRES_PASSWORD: hive
       POSTGRES_DB: metastore
-    # networks:
-    #   - magnumopus_airflow-net
+    networks:
+      - magnumopus_airflow-net
 
   hive-metastore:
     container_name: hive-metastore
@@ -121,8 +121,8 @@ services:
       AZURE_WASB_ACCESS_KEY: ""
     depends_on:
       - metastore_db
-    # networks:
-    #   - magnumopus_airflow-net
+    networks:
+      - magnumopus_airflow-net
 
   minio2:
     hostname: minio2
@@ -137,8 +137,8 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - minio2_volume:/data
-    # networks:
-    #   - magnumopus_airflow-net
+    networks:
+      - magnumopus_airflow-net
 
   # This job will create the "warehouse" bucket on Minio
   mc-job2:
@@ -152,12 +152,12 @@ services:
       "
     depends_on:
       - minio2
-    # networks:
-    #   - magnumopus_airflow-net
+    networks:
+      - magnumopus_airflow-net
 
 volumes:
   minio2_volume:
 
-# networks:
-#   magnumopus_airflow-net:
-#     external: true
+networks:
+  magnumopus_airflow-net:
+    external: true
