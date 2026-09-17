@@ -43,9 +43,6 @@ def ingest_callable(database, table_name, df):
     df.congestion_surcharge.fillna(-999, inplace=True)
     df.rate_code_id.fillna(-999, inplace=True)
 
-    # df.head(n=0).to_sql(name=table_name, con=engine, if_exists="replace")
-    # df.to_sql(name=table_name, con=engine, if_exists="append")
-
     df = df.copy()
 
     asyncio.run(_ingest_async(df, database, table_name))

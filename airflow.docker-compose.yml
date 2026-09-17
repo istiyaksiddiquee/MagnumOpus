@@ -51,7 +51,7 @@ x-airflow-common:
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
   # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.1.5}
   build:
-    context: airflow-build
+    context: docker-builds/airflow
     dockerfile: Dockerfile
   # build: .
   env_file:
@@ -84,8 +84,8 @@ x-airflow-common:
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
-    - ./config:/opt/airflow/config
-    - ./plugins:/opt/airflow/plugins
+    - ./docker-builds/airflow/config:/opt/airflow/config
+    # - ./plugins:/opt/airflow/plugins
     - ./gx:/opt/airflow/gx
     - ./dbt-transform:/opt/airflow/dbt-transform
   user: "${AIRFLOW_UID:-50000}:0"

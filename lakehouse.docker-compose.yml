@@ -11,7 +11,7 @@ services:
 
   coordinator-server:
     build:
-      context: Fluss-Build
+      context: docker-builds/fluss
       dockerfile: fluss.Dockerfile
     container_name: coordinator-server
     hostname: coordinator-server
@@ -31,7 +31,10 @@ services:
         datalake.format: iceberg
         datalake.iceberg.type: hive
         datalake.iceberg.uri: thrift://hive-metastore:9083
-        datalake.iceberg.warehouse: s3://warehouse/
+        datalake.iceberg.warehouse: s3a://minio2/warehouse/
+        datalake.iceberg.io-impl: org.apache.iceberg.aws.s3.S3FileIO
+        datalake.iceberg.s3.endpoint: http://minio2:9000
+        datalake.iceberg.s3.path-style-access: true
     ports:
       - "9123:9123"
     depends_on:
@@ -43,7 +46,7 @@ services:
 
   tablet-server:
     build:
-      context: Fluss-Build
+      context: docker-builds/fluss
       dockerfile: fluss.Dockerfile
     container_name: tablet-server
     hostname: tablet-server
@@ -74,7 +77,7 @@ services:
     ports:
       - "8000:8080"
     volumes:
-      - ./trino:/etc/trino
+      - ./docker-builds/trino:/etc/trino
     networks:
       - magnumopus_airflow-net
 
