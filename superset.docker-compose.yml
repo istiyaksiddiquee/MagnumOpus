@@ -3,7 +3,7 @@ version: '3'
 services:
   superset:
       build:
-        context: .
+        context: docker-builds/superset
         dockerfile: dockerfile
       container_name: superset
       environment:

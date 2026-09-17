@@ -2,3 +2,8 @@ dags/__pycache__
 logs/
 .vscode
 lake-venv
+stream-processing/flink/.idea
+stream-processing/flink/target
+gx/initial_gx/validation_definitions/
+gx/initial_gx/validation_definitions/
+docker-builds/fluss/stage

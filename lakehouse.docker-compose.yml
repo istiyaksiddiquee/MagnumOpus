@@ -2,35 +2,87 @@ version: '3.9'
 
 services:
 
-  lake_pgdb:
-    container_name: lake_pgdb
-    image: postgres:13
-    environment:
-      - POSTGRES_USER=${PG_USER}
-      - POSTGRES_PASSWORD=${PG_PASSWORD}
-      - PG_PORT=${PG_PORT}
-      - POSTGRES_DB=${PG_DATABASE}
-    volumes:
-      - lakehouse-pgdb-volume:/var/lib/postgresql/data
+  zookeeper:
+    image: zookeeper:3.9.2
+    container_name: zookeeper
     restart: always
-    ports:
-      - ${PG_PORT}:${PG_PORT}
     networks:
-      - dataingestion_airflow-net
+      - magnumopus_airflow-net
+
+  coordinator-server:
+    build:
+      context: docker-builds/fluss
+      dockerfile: fluss.Dockerfile
+    container_name: coordinator-server
+    hostname: coordinator-server
+    command: coordinatorServer
+    environment:
+      - |
+        FLUSS_PROPERTIES=
+        zookeeper.address: zookeeper:2181
+        bind.listeners: INTERNAL://coordinator-server:0, CLIENT://coordinator-server:9123
+        advertised.listeners: CLIENT://coordinator-server:9123
+        internal.listener.name: INTERNAL
+        remote.data.dir: s3://warehouse/fluss-remote
+        s3.endpoint: http://minio2:9000
+        s3.access-key: minio
+        s3.secret-key: minio123
+        s3.path.style.access: true
+        datalake.format: iceberg
+        datalake.iceberg.type: hive
+        datalake.iceberg.uri: thrift://hive-metastore:9083
+        datalake.iceberg.warehouse: s3a://minio2/warehouse/
+        datalake.iceberg.io-impl: org.apache.iceberg.aws.s3.S3FileIO
+        datalake.iceberg.s3.endpoint: http://minio2:9000
+        datalake.iceberg.s3.path-style-access: true
+    ports:
+      - "9123:9123"
+    depends_on:
+      - zookeeper
+      - hive-metastore
+      - mc-job2
+    networks:
+      - magnumopus_airflow-net
+
+  tablet-server:
+    build:
+      context: docker-builds/fluss
+      dockerfile: fluss.Dockerfile
+    container_name: tablet-server
+    hostname: tablet-server
+    command: tabletServer
+    environment:
+      - |
+        FLUSS_PROPERTIES=
+        zookeeper.address: zookeeper:2181
+        bind.listeners: INTERNAL://tablet-server:0, CLIENT://tablet-server:9124
+        advertised.listeners: CLIENT://tablet-server:9124
+        internal.listener.name: INTERNAL
+        remote.data.dir: s3://warehouse/fluss-remote
+        s3.endpoint: http://minio2:9000
+        s3.access-key: minio
+        s3.secret-key: minio123
+        s3.path.style.access: true
+    depends_on:
+      - coordinator-server
+    ports:
+      - "9124:9124"
+    networks:
+      - magnumopus_airflow-net
 
   trino:
     container_name: trino
-    image: "trinodb/trino"
+    image: trinodb/trino:479
     hostname: trino
     ports:
       - "8000:8080"
     volumes:
-      - ./trino:/etc/trino
+      - ./docker-builds/trino:/etc/trino
     networks:
-      - dataingestion_airflow-net
+      - magnumopus_airflow-net
 
   metastore_db:
-    image: postgres:13
+    image: postgres:17.7
     hostname: metastore_db
     container_name: metastore_db
     environment:
@@ -38,12 +90,12 @@ services:
       POSTGRES_PASSWORD: hive
       POSTGRES_DB: metastore
     networks:
-      - dataingestion_airflow-net
+      - magnumopus_airflow-net
 
   hive-metastore:
     container_name: hive-metastore
     hostname: hive-metastore
-    image: 'starburstdata/hive:3.1.2-e.15'
+    image: 'starburstdata/hive:3.1.3-e.15'
     ports:
       - '9083:9083' # Metastore Thrift
     environment:
@@ -52,7 +104,7 @@ services:
       HIVE_METASTORE_USER: hive
       HIVE_METASTORE_PASSWORD: hive
       HIVE_METASTORE_WAREHOUSE_DIR: s3://warehouse/
-      S3_ENDPOINT: http://minio:9000
+      S3_ENDPOINT: http://minio2:9000
       S3_ACCESS_KEY: minio
       S3_SECRET_KEY: minio123
       S3_PATH_STYLE_ACCESS: "true"
@@ -73,12 +125,12 @@ services:
     depends_on:
       - metastore_db
     networks:
-      - dataingestion_airflow-net
+      - magnumopus_airflow-net
 
-  minio:
-    hostname: minio
+  minio2:
+    hostname: minio2
     image: 'minio/minio:RELEASE.2022-05-26T05-48-41Z'
-    container_name: minio
+    container_name: minio2
     ports:
       - '9000:9000'
       - '9001:9001'
@@ -86,35 +138,29 @@ services:
       MINIO_ACCESS_KEY: minio
       MINIO_SECRET_KEY: minio123
     command: server /data --console-address ":9001"
-    networks:
-      - dataingestion_airflow-net
     volumes:
-      - minio_volume:/data
+      - minio2_volume:/data
+    networks:
+      - magnumopus_airflow-net
 
-  # # This job will create the "warehouse" bucket on Minio
-  mc-job:
+  # This job will create the "warehouse" bucket on Minio
+  mc-job2:
     image: 'minio/mc:RELEASE.2022-05-09T04-08-26Z'
-    container_name: mc-job
+    container_name: mc-job2
     entrypoint: |
       /bin/bash -c "
       sleep 5;
-      /usr/bin/mc config --quiet host add myminio http://minio:9000 minio minio123;
+      /usr/bin/mc config --quiet host add myminio http://minio2:9000 minio minio123;
       /usr/bin/mc mb --ignore-existing --quiet myminio/warehouse
       "
     depends_on:
-      - minio
+      - minio2
     networks:
-      - dataingestion_airflow-net
+      - magnumopus_airflow-net
 
 volumes:
-  minio_volume:
-  lakehouse-pgdb-volume:
-    # driver: local
-    # driver_opts:
-    #   type: 'none'
-    #   o: 'bind'
-    #   device: 'E:\\Magnum Opus\\magnum_db_backup'
+  minio2_volume:
 
 networks:
-  dataingestion_airflow-net:
+  magnumopus_airflow-net:
     external: true

@@ -5,6 +5,8 @@
     )
 }}
 
+{% set tables = get_source_tables('lakehouse_db') %}
+{% for table in tables %}
 select
   cast (vendorid as BIGINT) as vendorid, 
   cast (ratecodeid as BIGINT) as ratecodeid,

@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  pulsar:
+    image: apachepulsar/pulsar:3.3.2
+    container_name: pulsar-standalone
+    hostname: pulsar
+    ports:
+      - "6650:6650"   # Pulsar broker port
+      - "8080:8080"   # Pulsar admin port
+    command: bin/pulsar standalone
+    volumes:
+      - pulsar-data:/pulsar/data
+    environment:
+      - PULSAR_MEM=-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
+
+  pulsar-manager:
+    image: apachepulsar/pulsar-manager:v0.4.0
+    container_name: pulsar-manager
+    ports:
+      - "9527:9527"   # Pulsar Manager UI
+      - "7750:7750"   # Backend API
+    depends_on:
+      - pulsar
+    environment:
+      - SPRING_CONFIGURATION_FILE=/pulsar-manager/pulsar-manager/application.properties
+    volumes:
+      - pulsar-manager-data:/data
+
+volumes:
+  pulsar-data:
+  pulsar-manager-data:

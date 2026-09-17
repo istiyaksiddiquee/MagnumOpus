@@ -2,6 +2,16 @@
 
 {{ print("Running some_macro ") }}
 
+{% macro get_source_tables(source_name) %}
+  {% set tables = [] %}
+  {% for node in graph.sources.values() %}
+    {% if node.source_name == source_name %}
+      {% do tables.append(node.name) %}
+    {% endif %}
+  {% endfor %}
+  {{ return(tables) }}
+{% endmacro %}
+
 {% set schema_list_query %}
     select 
       table_name 
