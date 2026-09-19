@@ -70,7 +70,13 @@ async def create_monthly_table(admin, database: str, table_name: str) -> None:
     await admin.create_database(database, ignore_if_exists=True)
 
     table_path = fluss.TablePath(database, table_name)
-    descriptor = fluss.TableDescriptor(SCHEMA)
+    descriptor = fluss.TableDescriptor(
+        SCHEMA,
+        properties={
+            "table.datalake.enabled": "true",
+            "table.datalake.freshness": "60s",
+        },
+    )
 
     await admin.create_table(table_path, descriptor, ignore_if_exists=True)
     print(f"Ensured table exists: {database}.{table_name}")

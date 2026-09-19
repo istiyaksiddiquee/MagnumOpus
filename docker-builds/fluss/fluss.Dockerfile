@@ -20,25 +20,25 @@ ENV HADOOP_CONF_DIR=/opt/fluss/conf
 # whether the tiering job itself is running yet.
 RUN mkdir -p ${FLUSS_HOME}/plugins/iceberg
 
-COPY stage/${HADOOP_SHADED_JAR}         ${FLUSS_HOME}/plugins/iceberg/
-COPY stage/${ICEBERG_AWS_BUNDLE_JAR}    ${FLUSS_HOME}/plugins/iceberg/
-COPY stage/${ICEBERG_AWS_JAR}           ${FLUSS_HOME}/plugins/iceberg/
-COPY stage/${FAILSAFE_JAR}              ${FLUSS_HOME}/plugins/iceberg/
-COPY stage/${ICEBERG_HIVE_METASTORE_JAR} ${FLUSS_HOME}/plugins/iceberg/
+COPY lib/${HADOOP_SHADED_JAR}         ${FLUSS_HOME}/plugins/iceberg/
+COPY lib/${ICEBERG_AWS_BUNDLE_JAR}    ${FLUSS_HOME}/plugins/iceberg/
+COPY lib/${ICEBERG_AWS_JAR}           ${FLUSS_HOME}/plugins/iceberg/
+COPY lib/${FAILSAFE_JAR}              ${FLUSS_HOME}/plugins/iceberg/
+COPY lib/${ICEBERG_HIVE_METASTORE_JAR} ${FLUSS_HOME}/plugins/iceberg/
 
 # Hive Metastore Thrift client (hive-metastore:3.1.3 to match the hive-metastore
 # container in docker-compose) + its resolved transitive deps -- libthrift,
 # libfb303, hive-common, etc. Generated via resolve-hive/pom.xml +
-# `mvn dependency:copy-dependencies` into stage/hive-metastore-libs/.
+# `mvn dependency:copy-dependencies` into lib/hive-metastore-libs/.
 # HiveCatalog needs these at runtime (org.apache.hadoop.hive.metastore.api.*),
 # not just iceberg-hive-metastore.jar, which only holds Iceberg's own glue code.
-COPY stage/hive-metastore-libs/ ${FLUSS_HOME}/plugins/iceberg/
+COPY lib/hive-metastore-libs/ ${FLUSS_HOME}/plugins/iceberg/
 
 # Fail the build loudly if the resolver step was skipped or produced nothing --
-# an empty/missing stage/hive-metastore-libs/ otherwise copies in silently and
+# an empty/missing lib/hive-metastore-libs/ otherwise copies in silently and
 # only shows up later as a runtime NoClassDefFoundError.
 RUN test -n "$(ls -A ${FLUSS_HOME}/plugins/iceberg/hive-metastore*.jar 2>/dev/null)" \
-    || (echo "ERROR: hive-metastore client jar missing from plugins/iceberg/ -- run resolve-hive/pom.xml's mvn dependency:copy-dependencies into stage/hive-metastore-libs/ first" >&2 && exit 1)
+    || (echo "ERROR: hive-metastore client jar missing from plugins/iceberg/ -- run resolve-hive/pom.xml's mvn dependency:copy-dependencies into lib/hive-metastore-libs/ first" >&2 && exit 1)
 
 
 # Hadoop-style S3 config -- the Hive/Iceberg catalog path uses Hadoop's

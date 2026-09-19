@@ -1,8 +1,9 @@
 services:
   flink-jobmanager:
-    build:
-      context: docker-builds/flink
-      dockerfile: flink.Dockerfile
+    # build:
+    #   context: docker-builds/flink
+    #   dockerfile: flink.Dockerfile
+    image: istiyaksiddiquee/flink-fluss-for-magnum:v01
     container_name: flink-jobmanager
     hostname: flink-jobmanager
     command: jobmanager
@@ -13,12 +14,13 @@ services:
         FLINK_PROPERTIES=
         jobmanager.rpc.address: flink-jobmanager
     networks:
-      - magnumopus_airflow-net
+      - magnumopus-airflow-net
 
   flink-taskmanager:
-    build:
-      context: docker-builds/flink
-      dockerfile: flink.Dockerfile
+    # build:
+    #   context: docker-builds/flink
+    #   dockerfile: flink.Dockerfile
+    image: istiyaksiddiquee/flink-fluss-for-magnum:v01
     container_name: flink-taskmanager
     hostname: flink-taskmanager
     command: taskmanager
@@ -30,8 +32,26 @@ services:
     depends_on:
       - flink-jobmanager
     networks:
-      - magnumopus_airflow-net
+      - magnumopus-airflow-net
+
+  flink-tiering-submitter:
+    # build:
+    #   context: docker-builds/flink
+    #   dockerfile: flink.Dockerfile
+    image: istiyaksiddiquee/flink-fluss-for-magnum:v01
+    container_name: flink-tiering-submitter
+    entrypoint: |
+      /bin/bash -c "
+      sleep 15;
+      ./bin/flink run -m flink-jobmanager:8081 /opt/flink/usrlib/fluss-flink-tiering-0.9.1-incubating.jar --fluss.bootstrap.servers coordinator-server:9123 --datalake.format iceberg --datalake.iceberg.type hive --datalake.iceberg.uri thrift://hive-metastore:9083 --datalake.iceberg.warehouse s3a://warehouse/ --datalake.iceberg.io-impl org.apache.iceberg.aws.s3.S3FileIO --datalake.iceberg.s3.endpoint http://minio2:9000 --datalake.iceberg.s3.path-style-access true --datalake.iceberg.client.region us-east-1 --datalake.iceberg.s3.access-key-id minio --datalake.iceberg.s3.secret-access-key minio123
+      "
+    depends_on:
+      - flink-jobmanager
+      - flink-taskmanager
+    networks:
+      - magnumopus-airflow-net
 
 networks:
-  magnumopus_airflow-net:
+  magnumopus-airflow-net:
     external: true
+    name: magnumopus-airflow-net

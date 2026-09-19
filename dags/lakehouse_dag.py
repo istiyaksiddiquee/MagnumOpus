@@ -14,7 +14,7 @@ DATA_DIR.mkdir(exist_ok=True)
     start_date=datetime(2025, 1, 1),  # Before Jan 2025
     end_date=datetime(2025, 10, 15),
     default_args={"retries": 1, "retry_delay": duration(minutes=1)},
-    max_active_runs=2,
+    max_active_runs=1,
     catchup=True,
 )
 def lakehouse_dag():

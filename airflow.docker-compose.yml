@@ -291,4 +291,5 @@ volumes:
  
 networks:
   airflow-net:
+    name: magnumopus-airflow-net
     driver: bridge
