@@ -85,7 +85,6 @@ x-airflow-common:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./docker-builds/airflow/config:/opt/airflow/config
-    # - ./plugins:/opt/airflow/plugins
     - ./gx:/opt/airflow/gx
     - ./dbt-transform:/opt/airflow/dbt-transform
   user: "${AIRFLOW_UID:-50000}:0"

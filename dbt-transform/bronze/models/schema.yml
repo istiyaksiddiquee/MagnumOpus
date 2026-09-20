@@ -1,9 +1,9 @@
 version: 2
 
 sources:
-  - name: postgres
-    database: lakehouse_db
-    schema: public
+  - name: datalake
+    database: iceberg
+    schema: lakehouse_db
 
     tables:
       - name: green_taxi_2025_01

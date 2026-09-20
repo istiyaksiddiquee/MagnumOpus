@@ -6,7 +6,7 @@ bronze:
       user: admin
       host: localhost # revert back to trino
       port: 8000 # revert back to 8080
-      database: warehouse
+      database: iceberg
       schema: bronze
       threads: 1
 
@@ -18,7 +18,7 @@ silver:
       user: admin
       host: localhost # revert back to trino
       port: 8000 # revert back to 8080
-      database: warehouse
+      database: iceberg
       schema: silver
       threads: 1
 
@@ -30,6 +30,6 @@ gold:
       user: admin
       host: localhost # revert back to trino
       port: 8000 # revert back to 8080
-      database: warehouse
+      database: iceberg
       schema: gold
       threads: 1
