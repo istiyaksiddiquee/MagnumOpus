@@ -4,8 +4,8 @@ services:
     image: zookeeper:3.9.2
     container_name: zookeeper
     restart: always
-    networks:
-      - magnumopus-airflow-net
+    # networks:
+    #   - magnumopus-airflow-net
 
   coordinator-server:
     # build:
@@ -43,8 +43,8 @@ services:
       - zookeeper
       - hive-metastore
       - mc-job2
-    networks:
-      - magnumopus-airflow-net
+    # networks:
+    #   - magnumopus-airflow-net
 
   tablet-server:
     # build:
@@ -80,8 +80,8 @@ services:
       - coordinator-server
     ports:
       - "9124:9124"
-    networks:
-      - magnumopus-airflow-net
+    # networks:
+    #   - magnumopus-airflow-net
 
   trino:
     container_name: trino
@@ -91,8 +91,8 @@ services:
       - "8000:8080"
     volumes:
       - ./docker-builds/trino:/etc/trino
-    networks:
-      - magnumopus-airflow-net
+    # networks:
+    #   - magnumopus-airflow-net
 
   metastore_db:
     image: postgres:17.7
@@ -104,8 +104,8 @@ services:
       POSTGRES_DB: metastore
     volumes:
       - metastore_db_volume:/var/lib/postgresql/data
-    networks:
-      - magnumopus-airflow-net
+    # networks:
+    #   - magnumopus-airflow-net
 
   hive-metastore:
     container_name: hive-metastore
@@ -139,8 +139,8 @@ services:
       AZURE_WASB_ACCESS_KEY: ""
     depends_on:
       - metastore_db
-    networks:
-      - magnumopus-airflow-net
+    # networks:
+    #   - magnumopus-airflow-net
 
   minio2:
     hostname: minio2
@@ -150,13 +150,18 @@ services:
       - '9000:9000'
       - '9001:9001'
     environment:
-      MINIO_ACCESS_KEY: minio
-      MINIO_SECRET_KEY: minio123
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
     command: server /data --console-address ":9001"
     volumes:
       - minio2_volume:/data
-    networks:
-      - magnumopus-airflow-net
+    # networks:
+    #   - magnumopus-airflow-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
 
   # This job will create the "warehouse" bucket on Minio
   mc-job2:
@@ -170,16 +175,17 @@ services:
       /usr/bin/mc ls myminio
       "
     depends_on:
-      - minio2
-    networks:
-      - magnumopus-airflow-net
+      minio2:
+        condition: service_healthy
+    # networks:
+    #   - magnumopus-airflow-net
 
 volumes:
   minio2_volume:
   metastore_db_volume:
 
-  
-networks:
-  magnumopus-airflow-net:
-    external: true
-    name: magnumopus-airflow-net
+
+# networks:
+#   magnumopus-airflow-net:
+#     external: true
+#     name: magnumopus-airflow-net

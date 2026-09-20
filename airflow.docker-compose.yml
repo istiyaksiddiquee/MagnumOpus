@@ -53,7 +53,7 @@ x-airflow-common:
   # build:
   #   context: docker-builds/airflow
   #   dockerfile: Dockerfile
-  image: istiyaksiddiquee:airflow-for-magnum:v01
+  image: istiyaksiddiquee/airflow-for-magnum:v01
   env_file:
     - ${ENV_FILE_PATH:-.env}
   environment:

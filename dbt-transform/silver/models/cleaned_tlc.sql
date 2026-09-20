@@ -32,7 +32,7 @@ deduped as (
         *,
         row_number() over (
             partition by
-                vendorid,
+                vendor_id,
                 pickup_datetime,
                 dropoff_datetime,
                 pickup_locationid,
@@ -47,16 +47,16 @@ final as (
 
     select
         to_hex(md5(to_utf8(concat(
-            cast(vendorid as varchar), '|',
+            cast(vendor_id as varchar), '|',
             cast(pickup_datetime as varchar), '|',
             cast(dropoff_datetime as varchar), '|',
             cast(pickup_locationid as varchar), '|',
             cast(dropoff_locationid as varchar)
         )))) as trip_id,
 
-        vendorid,
-        ratecodeid,
-        case ratecodeid
+        vendor_id,
+        rate_code_id,
+        case rate_code_id
             when 1 then 'Standard rate'
             when 2 then 'JFK'
             when 3 then 'Newark'
@@ -83,7 +83,6 @@ final as (
         day_of_week(pickup_datetime) as pickup_day_of_week,
         case when day_of_week(pickup_datetime) in (6, 7) then true else false end as is_weekend,
 
-        store_and_fwd_flag,
         passenger_count,
         trip_distance,
         case
