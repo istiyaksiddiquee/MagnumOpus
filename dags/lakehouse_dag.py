@@ -235,6 +235,8 @@ def lakehouse_dag():
             "/opt/airflow/dbt-transform",
         ]
 
+        # dbt run --project-dir .\dbt-transform\bronze\ --profiles-dir .\dbt-transform\
+
         result = subprocess.run(cmd, capture_output=True, text=True)
 
         if result.returncode != 0:
