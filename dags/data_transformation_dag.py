@@ -14,7 +14,7 @@ GOLD_PROJECT_DIR = "/opt/airflow/dbt-transform/gold"
 PROFILES_DIR = "/opt/airflow/dbt-transform/"
 
 TRINO_HOST = "trino"
-TRINO_PORT = 8000
+TRINO_PORT = 8080
 TRINO_USER = "airflow"
 TRINO_CATALOG = "iceberg"
 GOLD_SCHEMA = "gold"
