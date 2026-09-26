@@ -1,0 +1,137 @@
+services:
+
+  # ---------------------------------------------------------------------
+  # Pulsar (standalone: broker + bookkeeper + local zookeeper in one node)
+  # ---------------------------------------------------------------------
+  pulsar:
+    image: apachepulsar/pulsar:3.3.2
+    container_name: pulsar
+    hostname: pulsar
+    command: bin/pulsar standalone
+    ports:
+      - "6650:6650"   # broker (binary protocol) -- producer/Flink connect here
+      - "8082:8080"   # admin/REST API + topic stats UI
+    volumes:
+      - pulsar_data:/pulsar/data
+    networks:
+      - magnumopus-airflow-net
+
+  # ---------------------------------------------------------------------
+  # Fluss -> Pulsar producer (long-running Python container from step 1)
+  # ---------------------------------------------------------------------
+  fluss-to-pulsar-producer:
+    build:
+      context: ./pulsar-producer
+      dockerfile: Dockerfile
+    container_name: fluss-to-pulsar-producer
+    restart: unless-stopped
+    environment:
+      FLUSS_BOOTSTRAP_SERVERS: coordinator-server:9123
+      FLUSS_DATABASE: lakehouse_db
+      FLUSS_TABLE: trip_events_stream
+      PULSAR_SERVICE_URL: pulsar://pulsar:6650
+      PULSAR_TOPIC: trip-events
+      OFFSET_STATE_PATH: /var/lib/producer/offset.json
+    volumes:
+      - producer_offset_volume:/var/lib/producer
+    depends_on:
+      - pulsar
+    networks:
+      - magnumopus-airflow-net
+
+  # ---------------------------------------------------------------------
+  # Apache Pinot -- own ZooKeeper (kept separate from the lakehouse's ZK
+  # to avoid znode collisions), controller, broker, server.
+  # ---------------------------------------------------------------------
+  pinot-zookeeper:
+    image: zookeeper:3.9.2
+    container_name: pinot-zookeeper
+    hostname: pinot-zookeeper
+    networks:
+      - magnumopus-airflow-net
+
+  pinot-controller:
+    image: apachepinot/pinot:1.2.0
+    container_name: pinot-controller
+    hostname: pinot-controller
+    command: StartController -zkAddress pinot-zookeeper:2181 -dataDir /data/pinot/controller
+    ports:
+      - "9003:9000"   # Controller UI/API -- host 9000/9001 already taken by MinIO
+    volumes:
+      - pinot_controller_data:/data/pinot/controller
+    depends_on:
+      - pinot-zookeeper
+    networks:
+      - magnumopus-airflow-net
+
+  pinot-broker:
+    image: apachepinot/pinot:1.2.0
+    container_name: pinot-broker
+    hostname: pinot-broker
+    command: StartBroker -zkAddress pinot-zookeeper:2181
+    ports:
+      - "8099:8099"
+    depends_on:
+      - pinot-controller
+    networks:
+      - magnumopus-airflow-net
+
+  pinot-server:
+    image: apachepinot/pinot:1.2.0
+    container_name: pinot-server
+    hostname: pinot-server
+    command: StartServer -zkAddress pinot-zookeeper:2181 -dataDir /data/pinot/server
+    ports:
+      - "8098:8098"
+      - "8097:8097"
+    volumes:
+      - pinot_server_data:/data/pinot/server
+    depends_on:
+      - pinot-controller
+    networks:
+      - magnumopus-airflow-net
+
+  # ---------------------------------------------------------------------
+  # Superset
+  # ---------------------------------------------------------------------
+  superset-init:
+    image: apache/superset:latest
+    container_name: superset-init
+    environment:
+      SUPERSET_SECRET_KEY: "change_me_to_a_random_secret"
+    volumes:
+      - superset_home:/app/superset_home
+    command: >
+      sh -c "
+      superset db upgrade &&
+      superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@example.com --password admin &&
+      superset init
+      "
+    networks:
+      - magnumopus-airflow-net
+
+  superset:
+    image: apache/superset:latest
+    container_name: superset
+    environment:
+      SUPERSET_SECRET_KEY: "change_me_to_a_random_secret"
+    ports:
+      - "8088:8088"
+    volumes:
+      - superset_home:/app/superset_home
+    depends_on:
+      - superset-init
+    networks:
+      - magnumopus-airflow-net
+
+volumes:
+  pulsar_data:
+  producer_offset_volume:
+  pinot_controller_data:
+  pinot_server_data:
+  superset_home:
+
+networks:
+  magnumopus-airflow-net:
+    external: true
+    name: magnumopus-airflow-net
