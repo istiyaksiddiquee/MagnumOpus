@@ -1,9 +1,9 @@
 services:
   flink-jobmanager:
-    # build:
-    #   context: docker-builds/flink
-    #   dockerfile: flink.Dockerfile
-    image: istiyaksiddiquee/flink-fluss-for-magnum:v01
+    build:
+      context: docker-builds/flink
+      dockerfile: flink.Dockerfile
+    # image: istiyaksiddiquee/flink-fluss-for-magnum:v01
     container_name: flink-jobmanager
     hostname: flink-jobmanager
     command: jobmanager
@@ -17,10 +17,10 @@ services:
       - magnumopus-airflow-net
 
   flink-taskmanager:
-    # build:
-    #   context: docker-builds/flink
-    #   dockerfile: flink.Dockerfile
-    image: istiyaksiddiquee/flink-fluss-for-magnum:v01
+    build:
+      context: docker-builds/flink
+      dockerfile: flink.Dockerfile
+    # image: istiyaksiddiquee/flink-fluss-for-magnum:v01
     container_name: flink-taskmanager
     hostname: flink-taskmanager
     command: taskmanager
@@ -35,10 +35,10 @@ services:
       - magnumopus-airflow-net
 
   flink-tiering-submitter:
-    # build:
-    #   context: docker-builds/flink
-    #   dockerfile: flink.Dockerfile
-    image: istiyaksiddiquee/flink-fluss-for-magnum:v01
+    build:
+      context: docker-builds/flink
+      dockerfile: flink.Dockerfile
+    # image: istiyaksiddiquee/flink-fluss-for-magnum:v01
     container_name: flink-tiering-submitter
     entrypoint: |
       /bin/bash -c "
@@ -51,7 +51,9 @@ services:
     networks:
       - magnumopus-airflow-net
 
+
 networks:
   magnumopus-airflow-net:
     external: true
     name: magnumopus-airflow-net
+
