@@ -3,7 +3,7 @@ services:
   zookeeper:
     image: zookeeper:3.9.2
     container_name: zookeeper
-    restart: always
+    # restart: always
     networks:
       - magnumopus-airflow-net
 

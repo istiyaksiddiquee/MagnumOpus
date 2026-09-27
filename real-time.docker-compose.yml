@@ -15,6 +15,28 @@ services:
       - pulsar_data:/pulsar/data
     networks:
       - magnumopus-airflow-net
+    healthcheck:
+      # pulsar-admin is bundled in the image, so this avoids depending on
+      # curl (not guaranteed to be present in the base image).
+      test: ["CMD", "bin/pulsar-admin", "brokers", "healthcheck"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  pulsar-init-topics:
+    image: apachepulsar/pulsar:3.3.2
+    container_name: pulsar-init-topics
+    entrypoint: >
+      bash -c "
+      bin/pulsar-admin topics create persistent://public/default/trip-events || true &&
+      bin/pulsar-admin topics create persistent://public/default/trip-events-summary || true
+      "
+    depends_on:
+      pulsar:
+        condition: service_healthy
+    networks:
+      - magnumopus-airflow-net
 
   # ---------------------------------------------------------------------
   # Fluss -> Pulsar producer (long-running Python container from step 1)
@@ -35,7 +57,10 @@ services:
     volumes:
       - producer_offset_volume:/var/lib/producer
     depends_on:
-      - pulsar
+      pulsar:
+        condition: service_healthy
+      pulsar-init-topics:
+        condition: service_completed_successfully
     networks:
       - magnumopus-airflow-net
 
@@ -43,93 +68,93 @@ services:
   # Apache Pinot -- own ZooKeeper (kept separate from the lakehouse's ZK
   # to avoid znode collisions), controller, broker, server.
   # ---------------------------------------------------------------------
-  pinot-zookeeper:
-    image: zookeeper:3.9.2
-    container_name: pinot-zookeeper
-    hostname: pinot-zookeeper
-    networks:
-      - magnumopus-airflow-net
+  # pinot-zookeeper:
+  #   image: zookeeper:3.9.2
+  #   container_name: pinot-zookeeper
+  #   hostname: pinot-zookeeper
+  #   networks:
+  #     - magnumopus-airflow-net
 
-  pinot-controller:
-    image: apachepinot/pinot:1.2.0
-    container_name: pinot-controller
-    hostname: pinot-controller
-    command: StartController -zkAddress pinot-zookeeper:2181 -dataDir /data/pinot/controller
-    ports:
-      - "9003:9000"   # Controller UI/API -- host 9000/9001 already taken by MinIO
-    volumes:
-      - pinot_controller_data:/data/pinot/controller
-    depends_on:
-      - pinot-zookeeper
-    networks:
-      - magnumopus-airflow-net
+  # pinot-controller:
+  #   image: apachepinot/pinot:1.2.0
+  #   container_name: pinot-controller
+  #   hostname: pinot-controller
+  #   command: StartController -zkAddress pinot-zookeeper:2181 -dataDir /data/pinot/controller
+  #   ports:
+  #     - "9003:9000"   # Controller UI/API -- host 9000/9001 already taken by MinIO
+  #   volumes:
+  #     - pinot_controller_data:/data/pinot/controller
+  #   depends_on:
+  #     - pinot-zookeeper
+  #   networks:
+  #     - magnumopus-airflow-net
 
-  pinot-broker:
-    image: apachepinot/pinot:1.2.0
-    container_name: pinot-broker
-    hostname: pinot-broker
-    command: StartBroker -zkAddress pinot-zookeeper:2181
-    ports:
-      - "8099:8099"
-    depends_on:
-      - pinot-controller
-    networks:
-      - magnumopus-airflow-net
+  # pinot-broker:
+  #   image: apachepinot/pinot:1.2.0
+  #   container_name: pinot-broker
+  #   hostname: pinot-broker
+  #   command: StartBroker -zkAddress pinot-zookeeper:2181
+  #   ports:
+  #     - "8099:8099"
+  #   depends_on:
+  #     - pinot-controller
+  #   networks:
+  #     - magnumopus-airflow-net
 
-  pinot-server:
-    image: apachepinot/pinot:1.2.0
-    container_name: pinot-server
-    hostname: pinot-server
-    command: StartServer -zkAddress pinot-zookeeper:2181 -dataDir /data/pinot/server
-    ports:
-      - "8098:8098"
-      - "8097:8097"
-    volumes:
-      - pinot_server_data:/data/pinot/server
-    depends_on:
-      - pinot-controller
-    networks:
-      - magnumopus-airflow-net
+  # pinot-server:
+  #   image: apachepinot/pinot:1.2.0
+  #   container_name: pinot-server
+  #   hostname: pinot-server
+  #   command: StartServer -zkAddress pinot-zookeeper:2181 -dataDir /data/pinot/server
+  #   ports:
+  #     - "8098:8098"
+  #     - "8097:8097"
+  #   volumes:
+  #     - pinot_server_data:/data/pinot/server
+  #   depends_on:
+  #     - pinot-controller
+  #   networks:
+  #     - magnumopus-airflow-net
 
   # ---------------------------------------------------------------------
   # Superset
   # ---------------------------------------------------------------------
-  superset-init:
-    image: apache/superset:latest
-    container_name: superset-init
-    environment:
-      SUPERSET_SECRET_KEY: "change_me_to_a_random_secret"
-    volumes:
-      - superset_home:/app/superset_home
-    command: >
-      sh -c "
-      superset db upgrade &&
-      superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@example.com --password admin &&
-      superset init
-      "
-    networks:
-      - magnumopus-airflow-net
+  # superset-init:
+  #   image: apache/superset:latest
+  #   container_name: superset-init
+  #   environment:
+  #     SUPERSET_SECRET_KEY: "change_me_to_a_random_secret"
+  #   volumes:
+  #     - superset_home:/app/superset_home
+  #   command: >
+  #     sh -c "
+  #     superset db upgrade &&
+  #     superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@example.com --password admin &&
+  #     superset init
+  #     "
+  #   networks:
+  #     - magnumopus-airflow-net
 
-  superset:
-    image: apache/superset:latest
-    container_name: superset
-    environment:
-      SUPERSET_SECRET_KEY: "change_me_to_a_random_secret"
-    ports:
-      - "8088:8088"
-    volumes:
-      - superset_home:/app/superset_home
-    depends_on:
-      - superset-init
-    networks:
-      - magnumopus-airflow-net
+  # superset:
+  #   image: apache/superset:latest
+  #   container_name: superset
+  #   environment:
+  #     SUPERSET_SECRET_KEY: "change_me_to_a_random_secret"
+  #   ports:
+  #     - "8088:8088"
+  #   volumes:
+  #     - superset_home:/app/superset_home
+  #   depends_on:
+  #     - superset-init
+  #   networks:
+  #     - magnumopus-airflow-net
 
 volumes:
   pulsar_data:
   producer_offset_volume:
-  pinot_controller_data:
-  pinot_server_data:
-  superset_home:
+  # pinot_controller_data:
+  # pinot_server_data:
+  # superset_home:
 
 networks:
   magnumopus-airflow-net:

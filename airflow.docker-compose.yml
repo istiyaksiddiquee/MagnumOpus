@@ -108,7 +108,7 @@ services:
       interval: 10s
       retries: 5
       start_period: 5s
-    restart: always
+    
     networks:
       - airflow-net
 
@@ -125,7 +125,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: always
+    
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -141,7 +141,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: always
+    
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -156,7 +156,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: always
+    
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -171,7 +171,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: always
+    
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:

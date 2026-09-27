@@ -10,6 +10,9 @@ flink-up:
 logs-up:
 	docker-compose -f log-aggregation.docker-compose.yml --env-file .\.env up --build
 
+realtime-up:
+	docker-compose -f real-time.docker-compose.yml --env-file .\.env up --build
+
 down:
 	docker-compose -f lakehouse.docker-compose.yml --env-file .\.env down
 	docker-compose -f airflow.docker-compose.yml --env-file .\.env down 
