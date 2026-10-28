@@ -1,6 +1,6 @@
 # Lakehouse ELT (ETL) Architecture of Magnum Opus
 
-![lakehouse](lakehouse_system.jpg)
+![lakehouse](./pipeline-pictures/lakehouse_system.jpg)
 
 As is apparent from the image above, this part of the project implements a ELT pipeline based on the idea of [Lakehouse](https://www.cidrdb.org/cidr2021/papers/cidr2021_paper17.pdf). But, instead of relying on the click-based hosted solutions, I went for a full-ride on getting things done in a hard way. I created my own lakehouse based on open-source and free tools. For this, I am heavily relying on [MinIo](https://min.io/) and [Apache Iceberg](https://iceberg.apache.org/). To facilitate this platform [Trino](https://trino.io/) and [Hive](https://hive.apache.org/) (for meta-store). 
 

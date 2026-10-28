@@ -6,7 +6,7 @@ This project simulates a data science pipeline. In this pipeline we are faced wi
 
 So, in simple terms, this project will go through the full cycle of a machile learning engineering workload, from ETL to ML development to MLOps in streaming mode. The following image will give you an idea of what technologies will be used in this project. 
 
-![Alt Tech Stack](tools_used.jpg)
+![Alt Tech Stack](pipeline-pictures/tools_used.jpg)
 
 Let's now enumerate some of the characteristics of this project:
 
