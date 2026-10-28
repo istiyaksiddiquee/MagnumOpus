@@ -14,7 +14,7 @@ DATA_DIR.mkdir(exist_ok=True)
     start_date=datetime(2025, 1, 1),  # Before Jan 2025
     end_date=datetime(2025, 10, 15),
     default_args={"retries": 1, "retry_delay": duration(minutes=1)},
-    max_active_runs=2,
+    max_active_runs=1,
     catchup=True,
 )
 def lakehouse_dag():
@@ -217,71 +217,9 @@ def lakehouse_dag():
 
         return str(year_month_duo)
 
-    # Bronze transform - now properly using task output
-    @task()
-    def run_bronze_transform(year_month_duo: int):
-        """Run dbt bronze transformation"""
-        import subprocess
-
-        table_name = f"green_taxi_{year_month_duo}"
-        cmd = [
-            "dbt",
-            "run",
-            "--vars",
-            f"db_name: {table_name}",
-            "--project-dir",
-            "/opt/airflow/dbt-transform/bronze",
-            "--profiles-dir",
-            "/opt/airflow/dbt-transform",
-        ]
-
-        result = subprocess.run(cmd, capture_output=True, text=True)
-
-        if result.returncode != 0:
-            print(f"Error: {result.stderr}")
-            raise Exception(f"dbt bronze run failed: {result.stderr}")
-
-        print(result.stdout)
-        return {"status": "success", "step": "bronze"}
-
-    @task()
-    def run_silver_transform(bronze_result: dict):
-        """Run dbt silver transformation"""
-        import subprocess
-
-        cmd = ["dbt", "run", "--project-dir", "/opt/airflow/dbt-transform/silver", "--profiles-dir", "/opt/airflow/dbt-transform"]
-
-        result = subprocess.run(cmd, capture_output=True, text=True)
-
-        if result.returncode != 0:
-            print(f"Error: {result.stderr}")
-            raise Exception(f"dbt silver run failed: {result.stderr}")
-
-        print(result.stdout)
-        return {"status": "success", "step": "silver"}
-
-    @task()
-    def run_gold_transform(silver_result: dict):
-        """Run dbt gold transformation"""
-        import subprocess
-
-        cmd = ["dbt", "run", "--project-dir", "/opt/airflow/dbt-transform/gold", "--profiles-dir", "/opt/airflow/dbt-transform"]
-
-        result = subprocess.run(cmd, capture_output=True, text=True)
-
-        if result.returncode != 0:
-            print(f"Error: {result.stderr}")
-            raise Exception(f"dbt gold run failed: {result.stderr}")
-
-        print(result.stdout)
-        return {"status": "success", "step": "gold"}
-
     year_month_duo = scrape_data_from_source()
     year_month_duo = data_validation(year_month_duo=year_month_duo)
     year_month_duo = db_injection(year_month_duo=year_month_duo)
-    # bronze_result = run_bronze_transform(year_month_duo=year_month_duo)
-    # silver_result = run_silver_transform(bronze_result)
-    # gold_result = run_gold_transform(silver_result)
 
 
 lakehouse_dag()

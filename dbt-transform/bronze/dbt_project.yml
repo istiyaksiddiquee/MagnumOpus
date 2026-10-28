@@ -32,5 +32,5 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   bronze:
     +materialized: incremental
-    +file_format: iceberg
+    +file_format: parquet
     +location_root: s3a://warehouse/bronze

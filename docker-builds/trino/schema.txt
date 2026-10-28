@@ -1,8 +1,5 @@
-CREATE SCHEMA IF NOT EXISTS warehouse.bronze 
-WITH (location='s3a://warehouse/bronze');
-CREATE SCHEMA IF NOT EXISTS warehouse.silver 
-WITH (location='s3a://warehouse/silver');
-CREATE SCHEMA IF NOT EXISTS warehouse.gold 
-WITH (location='s3a://warehouse/gold');
+CREATE SCHEMA IF NOT EXISTS iceberg.bronze WITH (location='s3a://warehouse/bronze');
+CREATE SCHEMA IF NOT EXISTS iceberg.silver WITH (location='s3a://warehouse/silver');
+CREATE SCHEMA IF NOT EXISTS iceberg.gold WITH (location='s3a://warehouse/gold');
 
 trino://admin@host.docker.internal:8080/warehouse --> for superset

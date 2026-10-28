@@ -21,6 +21,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
 COPY --chown=$AIRFLOW_UID:0 requirements.txt .
 
 RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --no-cache-dir maturin
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
 RUN mkdir -p /opt/airflow/shared_data && chown $AIRFLOW_UID:$AIRFLOW_UID /opt/airflow/shared_data

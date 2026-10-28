@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: silver_layer
+    database: iceberg
+    schema: silver
+
+    tables:
+      - name: cleaned_tlc
